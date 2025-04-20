@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>halan's 21st invitation</title>
+
+  <link rel="preload" as="image" href="Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background1.png">
+  <link rel="preload" as="image" href="Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background2.png">
+  <link rel="preload" as="image" href="Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background3.png">
+  <link rel="preload" as="image" href="Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background4.png">
+  <link rel="preload" as="image" href="Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background5.png">
+
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+  <audio id="popSound" src="assets/bubble_pop_sfx.mp3" preload="auto"></audio>
+  <audio id="ambientAudio" src="assets/sabody_bubble_ambience.mp3" autoplay loop preload="auto"></audio>
+
+  <style>
+    @font-face {
+      font-family: 'amiga4ever';
+      src: url('fonts/amiga4ever.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body {
+      background-image: url('Drawings/Sabody%20Archipelago%20Background/Sabody_Archipelago_Background_Upscaled.png');
+      background-size: 120% 120%; /* Enlarged background to prevent whitespace during parallax */
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-attachment: fixed;
+      font-family: 'amiga4ever', 'Courier New', Courier, monospace;
+      color: rgb(81, 81, 81);
+      position: relative;
+      min-height: 100vh;
+    }
+
+    #bubbles-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .cards-container {
+      height: 100vh;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      scrollbar-width: none; 
+      -ms-overflow-style: none;
+      padding: 50px 0 0 50px;
+      position: relative;
+      z-index: 5;
+    }
+
+    /* get rid of scrollbar  */
+    .cards-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .invite-container,
+    .invite-container2 {
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 30px;
+      border-radius: 30px;
+      max-width: 400px;
+      margin-bottom: 20px;
+      text-align: left;
+      z-index: 10;
+      position: relative;
+      opacity: 1;
+      display: block;
+    }
+
+    .invite-container2 {
+      background-color: rgba(227, 235, 254, 0.776);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .floating-bubble {
+      position: absolute;
+      bottom: -100px;
+      width: 80px;
+      opacity: 0.7;
+      animation: floatUp 10s linear infinite;
+      z-index: 1;
+    }
+
+    @keyframes floatUp {
+      0% {
+        bottom: -100px;
+        opacity: 0.3;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        bottom: 100%;
+        opacity: 0;
+      }
+    }
+
+    .pop-bubble {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      position: fixed;
+      pointer-events: none;
+      z-index: 2;
+      animation: popFrames 0.3s steps(1) forwards;
+    }
+
+    .event-details strong {
+      color: #ff7f50; 
+    }
+
+    @keyframes popFrames {
+      0%   { background-image: url('Drawings/Bubble%20Large/Bubble_Large1.png'); }
+      10%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large2.png'); }
+      17%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large3.png'); }
+      22%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large4.png'); }
+      28%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large5.png'); }
+      32%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large6.png'); }
+      50%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large7.png'); }
+      70%  { background-image: url('Drawings/Bubble%20Large/Bubble_Large8.png'); }
+      100% { opacity: 0; }
+    }
+
+    #confirmation {
+      margin-top: 15px; /* gap below button */
+    }
+    
+    /* Form styling */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-family: 'amiga4ever', 'Courier New', Courier, monospace;
+    }
+
+    button {
+      background-color: #ff7f50;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'amiga4ever', 'Courier New', Courier, monospace;
+    }
+
+    button:hover {
+      background-color: #ff5722;
+    }
+
+    #showRsvpButton {
+      background-color: #505050; 
+    }
+
+    #showRsvpButton:hover {
+      background-color: #424242; 
+    }
+    
+    .event-details p {
+      margin: 10px 0;
+    }
+
+    /* RSVP list styling */
+    #rsvpListContainer {
+      margin-top: 15px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border-radius: 5px;
+      padding: 10px;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    #rsvpList {
+      list-style-type: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    #rsvpList li {
+      padding: 5px 0;
+      border-bottom: 1px dashed #ccc;
+    }
+
+    #rsvpList li:last-child {
+      border-bottom: none;
+    }
+
+    .button-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Bubbles -->
+  <div id="bubbles-container"></div>
+
+  <!-- Cards Container for Scrolling -->
+  <div class="cards-container" id="cardsContainer">
+    <!-- Invite Content -->
+    <div class="invite-container" id="mainCard">
+      <h1>LET'S CELEBRATE!</h1>
+      <p>turning 21 i'm getting too old</p>
+      <div class="event-details">
+        <p><strong>Location:</strong> Dinosaur Caves Park</p>
+        <p><strong>Date:</strong> Saturday, May 3rd</p>
+        <p><strong>Time:</strong> 3:00PM</p>
+      </div>
+
+      <h2><center>=====RSVP=====</center></h2>
+      <form id="rsvpForm">
+        <input type="text" id="name" placeholder="name" required />
+        <div class="button-group">
+          <button type="submit">Submit RSVP</button>
+          <button type="button" id="showRsvpButton">See Who's Coming</button>
+        </div>
+      </form>
+      <div id="confirmation" class="hidden"></div>
+      <div id="rsvpListContainer" class="hidden">
+        <h3>Guest List:</h3>
+        <ul id="rsvpList"></ul>
+      </div>
+    </div>
+
+    <!-- Notes Section -->
+    <div class="invite-container2" id="notesCard">
+      <h3>NOTES:</h3>
+      <div class="event-details">
+        <p>- for legal reasons we coindentally met up</p>
+        <p>- bring blankets to sit on</p>
+        <p>- bring food & games (spikeball, cards, etc.)</p>
+        <p>- bring food & games (spikeball, cards, etc.)</p>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const backgroundFrames = [
+        'Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background1.png',
+        'Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background2.png',
+        'Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background3.png',
+        'Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background4.png',
+        'Drawings/Sabody Archipelago Background/Sabody_Archipelago_Background5.png'
+      ];
+
+      let currentFrame = 0;
+
+      function preloadImages(urls, callback) {
+        let loaded = 0;
+        const total = urls.length;
+
+        urls.forEach((url) => {
+          const img = new Image();
+          img.src = url;
+          img.onload = () => {
+            loaded++;
+            if (loaded === total) callback();
+          };
+        });
+      }
+          
+      function showNames() {
+        const names = JSON.parse(localStorage.getItem('rsvpNames')) || [];
+        const list = document.getElementById('rsvpList');
+        list.innerHTML = '';
+        names.forEach(name => {
+          const li = document.createElement('li');
+          li.textContent = name;
+          list.appendChild(li);
+        });
+      }
+
+      // Add the event listener for the "See Who's Coming" button
+      document.getElementById('showRsvpButton').addEventListener('click', function() {
+        const rsvpListContainer = document.getElementById('rsvpListContainer');
+        if (rsvpListContainer.classList.contains('hidden')) {
+          showNames(); // Update the list before showing
+          rsvpListContainer.classList.remove('hidden');
+          this.textContent = 'Hide Guest List';
+        } else {
+          rsvpListContainer.classList.add('hidden');
+          this.textContent = "See Who's Coming";
+        }
+      });
+
+      const ambientAudio = document.getElementById('ambientAudio');
+
+      function tryPlayAmbient() {
+        if (ambientAudio.paused) {
+          ambientAudio.volume = 0.75; // volume between 0.0 and 1.0
+          ambientAudio.play().catch(e => {
+            console.log("Autoplay blocked, will try again on interaction.");
+          });
+        }
+      }
+
+      document.addEventListener('click', tryPlayAmbient);
+      document.addEventListener('mousemove', tryPlayAmbient);
+
+
+      function animateBackground() {
+        document.body.style.backgroundImage = `url('${backgroundFrames[currentFrame]}')`;
+        currentFrame = (currentFrame + 1) % backgroundFrames.length;
+      }
+
+      // Preload first, then animate
+      preloadImages(backgroundFrames, () => {
+        document.body.style.backgroundImage = `url('${backgroundFrames[0]}')`;
+        setInterval(animateBackground, 200);
+      });
+
+      // === DOM Elements ===
+      const container = document.getElementById('bubbles-container');
+      const cardsContainer = document.getElementById('cardsContainer');
+      const mainCard = document.getElementById('mainCard');
+      const notesCard = document.getElementById('notesCard');
+      const popSound = document.getElementById('popSound');
+    
+      // === Floating Bubbles ===
+      function createFloatingBubble(isTiny = false) {
+        const bubble = document.createElement('img');
+        bubble.src = 'Drawings/Bubble%20Large/Bubble_Large1.png';
+        bubble.alt = 'floating-bubble';
+        bubble.classList.add('floating-bubble');
+    
+        // Style the bubble based on size
+        if (isTiny) {
+          bubble.style.width = `${Math.random() * 20 + 10}px`;
+          bubble.style.opacity = `${Math.random() * 0.3 + 0.1}`;
+          bubble.style.zIndex = 0;
+          bubble.style.pointerEvents = 'none';
+        } else {
+          bubble.style.width = `${Math.random() * 40 + 40}px`;
+          bubble.style.opacity = `${Math.random() * 0.4 + 0.6}`;
+          bubble.style.zIndex = 1;
+          bubble.style.pointerEvents = 'auto';
+          bubble.addEventListener('click', () => manualPopBubble(bubble));
+        }
+    
+        bubble.style.left = `${Math.random() * 90 + 5}%`;
+        bubble.style.animationDelay = `${Math.random() * 10}s`;
+    
+        container.appendChild(bubble);
+    
+        const willPop = !isTiny && Math.random() > 0.3;
+        if (willPop) {
+          setTimeout(() => popBubble(bubble), Math.random() * 5000 + 3000);
+        }
+      }
+    
+      function playPopSound() {
+        if (popSound) {
+          popSound.volume = 0.10; // volume between 0.0 and 1.0
+          popSound.currentTime = 0;
+          popSound.play();
+          popSound.playbackRate = 0.9 + Math.random() * 0.2; // Adds variation
+        }
+      }
+    
+      function popBubble(bubble) {
+        if (!document.body.contains(bubble)) return;
+
+        playPopSound(); // 🔊 Play first, before removing or calculating
+
+        const rect = bubble.getBoundingClientRect();
+        bubble.remove();
+
+        const pop = document.createElement('div');
+        pop.className = 'pop-bubble';
+        pop.style.left = `${rect.left}px`;
+        pop.style.top = `${rect.top}px`;
+
+        document.body.appendChild(pop);
+
+        setTimeout(() => {
+          if (pop.parentNode) pop.remove();
+          createFloatingBubble();
+        }, 300);
+      }
+
+      function manualPopBubble(bubble) {
+        playPopSound();
+        popBubble(bubble);
+      }
+    
+      // === Initialize Bubbles ===
+      for (let i = 0; i < 8; i++) createFloatingBubble(false); // Large
+      for (let i = 0; i < 15; i++) createFloatingBubble(true);  // Tiny
+    
+      // === Card Setup ===
+      mainCard.style.display = 'block';
+      notesCard.style.display = 'block';
+    
+      // === AOS (Animate On Scroll) Init ===
+      AOS.init({
+        disable: 'mobile',
+        once: false,
+        startEvent: 'DOMContentLoaded'
+      });
+    
+      // === RSVP Form ===
+      document.getElementById('rsvpForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        if (!name) return;
+
+        // Save to localStorage
+        let names = JSON.parse(localStorage.getItem('rsvpNames')) || [];
+        names.push(name);
+        localStorage.setItem('rsvpNames', JSON.stringify(names));
+
+        const confirmation = document.getElementById('confirmation');
+        confirmation.textContent = `see you then ${name}!`;
+        confirmation.classList.remove('hidden');
+        this.reset();
+        
+        // Update the RSVP list if it's currently visible
+        if (!document.getElementById('rsvpListContainer').classList.contains('hidden')) {
+          showNames();
+        }
+      });     
+      
+      // === Scroll Interaction ===
+      cardsContainer.addEventListener('wheel', function (e) {
+        if (e.deltaY > 0 && cardsContainer.scrollTop < 50) {
+          e.preventDefault();
+          notesCard.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    
+      // === Parallax Background Effect ===
+      document.addEventListener('mousemove', function (e) {
+        const moveX = (e.clientX / window.innerWidth - 0.5) * 60;
+        const moveY = (e.clientY / window.innerHeight - 0.5) * 60;
+        document.body.style.backgroundPosition = `calc(50% + ${moveX}px) calc(50% + ${moveY}px)`;
+      });
+    
+      // === Bubble Trail on Mouse Move ===
+      document.addEventListener('mousemove', function (e) {
+        const trailBubble = document.createElement('img');
+        trailBubble.src = 'Drawings/Bubble%20Large/Bubble_Large1.png';
+        trailBubble.className = 'floating-bubble';
+        trailBubble.style.width = `${Math.random() * 10 + 5}px`;
+        trailBubble.style.opacity = '0.5';
+        trailBubble.style.left = `${e.clientX}px`;
+        trailBubble.style.top = `${e.clientY}px`;
+        trailBubble.style.position = 'fixed';
+        trailBubble.style.pointerEvents = 'none';
+        trailBubble.style.animation = 'trailFade 1s ease-out forwards';
+        trailBubble.style.zIndex = 3;
+    
+        document.body.appendChild(trailBubble);
+    
+        setTimeout(() => {
+          if (trailBubble && trailBubble.parentNode) {
+            trailBubble.remove();
+          }
+        }, 1000);
+      });
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+</body>
+</html>
